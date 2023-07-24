@@ -8,5 +8,5 @@ return [
     // Session初始化
     // \think\middleware\SessionInit::class
     //验证操作
-    \app\middleware\Auth::class,
+//    \app\middleware\Auth::class,
 ];
