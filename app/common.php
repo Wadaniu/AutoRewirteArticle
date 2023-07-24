@@ -1,14 +1,17 @@
 <?php
-// 应用公共文件
+use think\facade\Request;
+use think\facade\Env;
+use think\facade\Config;
 
 //获取url参数
 use think\facade\Cache;
-use think\facade\Request;
+
 
 function get_params($key = "")
 {
     return Request::instance()->param($key);
 }
+
 
 //随机字符串，默认长度10
 function set_salt($num = 10)
@@ -116,4 +119,27 @@ function get_cache($key)
 function clear_cache($key)
 {
     Cache::clear($key);
+}
+
+function returnToJson($code = 0, $msg = '请求成功', $data = [], $httpCode = 200, $header = [], $options = [])
+{
+    $res['code'] = $code;
+    $res['msg'] = $msg;
+    if (is_object($data)) {
+        $data = $data->toArray();
+    }
+    if (!empty($data['total'])) {
+        $res['count'] = $data['total'];
+    } else {
+        $res['count'] = 0;
+    }
+    $res['data'] = $data;
+    $response = \think\Response::create($res, "json", $httpCode, $header, $options);
+    throw new \think\exception\HttpResponseException($response);
+}
+
+
+function get_config($key)
+{
+    return Config::get($key);
 }
