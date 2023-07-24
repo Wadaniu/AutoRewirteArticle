@@ -81,6 +81,9 @@ function add_user_log($type, $param_str = '', $param_id = 0, $param = [])
 function get_login_user($key = "")
 {
     $session_user = get_cache('app.session_user');
+    if (is_null($session_user)){
+        $session_user = '';
+    }
     if (\think\facade\Session::has($session_user)) {
         $gougu_user = \think\facade\Session::get($session_user);
         if (!empty($key)) {
