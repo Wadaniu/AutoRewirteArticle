@@ -11,6 +11,7 @@ use think\console\Output;
 use app\model\siteModel;
 use think\facade\Db;
 use app\model\testModel;
+use think\db\Connection;
 
 class site extends Command
 {
@@ -23,24 +24,28 @@ class site extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        // 指令输出
-//        $output->writeln('site');
-//        $site = (new siteModel())->where("status",1)->select()->toArray();
-//        print_r($site);
-
-        $config = [
-            'type'     => 'mysql',
-            'hostname' => '127.0.0.1',
-            'database' => 'truedata',
-            'username' => 'root',
-            'password' => 'root',
-            'hostport' => '3306',
-            'charset'  => 'utf8',
-            'prefix'   => '',
-        ];
-        $config = config("database.mysql");
-        Db::setConfig('db2', $config);
-        //$list = Db::connect('mysql')->query("select * from fb_football_competition where id=1");
-        print_r($config);
+        $config = [];
+        $config['hostname'] = '127.0.0.1';
+        $config['database'] = 'truedata';
+        $config['username'] = 'root';
+        $config['password'] = 'root';
+        $this->a1($config);
+    }
+    function a1($config){
+        $conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config['database']);
+        if (mysqli_connect_errno()) {
+            echo "连接 MySQL 数据库失败：" . mysqli_connect_error();
+            exit;
+        }
+        $sql = "SELECT * FROM fb_football_competition order by id desc limit 5";
+        $result = mysqli_query($conn, $sql);
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                print_r($row);
+            }
+        } else {
+            echo "没有查询到数据！";
+        }
+        mysqli_close($conn);
     }
 }
