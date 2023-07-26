@@ -7,23 +7,18 @@
  */
 
 namespace app\controller;
-use app\model\siteModel;
+use app\model\ChatKeyModel;
 use app\BaseController;
 use think\facade\Db;
 
 
-class site extends BaseController
+class chatkey extends BaseController
 {
 
     //站点列表
     public function datalist(){
-        $model = new siteModel();
-        $param = get_params();
-        $where = [];
-        if (!empty($param['keywords'])) {
-            $where[] = ['site_name|username|db', 'like', '%' . $param['keywords'] . '%'];
-        }
-        $list = $model->datalist($where,$param);
+        $model = new ChatKeyModel();
+        $list = $model->datalist([],get_params());
         $this->apiSuccess("success",$list);
     }
 
@@ -31,15 +26,15 @@ class site extends BaseController
     //站点编辑
     public function edit(){
         $param = get_params();
-        $model = (new siteModel());
-        $exist = $model->where("site_name",$param['site_name'])->find();
+        $model = (new ChatKeyModel());
+        $exist = $model->where("key",$param['key'])->find();
         if(isset($param['id']) && $param['id']){
             if($exist){
-                $this->apiError($param['site_name']."已存在");
+                $this->apiError($param['key']."已存在");
             }
         }else{
             if($exist && $param['id']!=$exist->id){
-                $this->apiError($param['site_name']."已存在");
+                $this->apiError($param['key']."已存在");
             }
         }
         if(isset($param['id']) && $param['id']){
@@ -47,14 +42,11 @@ class site extends BaseController
         }else{
             $row = $model;
         }
-        $row->username = $param['username'];
-        $row->password = $param['password'];
-        $row->ip = $param['ip'];
+        $row->key = $param['key'];
         $row->status = $param['status'];
-        $row->site_name = $param['site_name'];
-        $row->db = $param['db'];
+        $row->updateAt = time();
         if(empty($param['id'])){
-            $row->createdAt = time();
+            $row->createdAt = $row->updateAt;
         }
         Db::startTrans();
         try{
@@ -71,13 +63,13 @@ class site extends BaseController
     public function del(){
         $param = get_params();
         if(is_array($param["id"])){
-            if((new siteModel())->where("id","in",$param["id"])->delete()){
+            if((new ChatKeyModel())->where("id","in",$param["id"])->delete()){
                 $this->apiSuccess("删除成功");
             }else{
                 $this->apiSuccess("删除失败");
             }
         }else{
-            if((new siteModel())->where("id",$param["id"])->delete()){
+            if((new ChatKeyModel())->where("id",$param["id"])->delete()){
                 $this->apiSuccess("删除成功");
             }else{
                 $this->apiSuccess("删除失败");
