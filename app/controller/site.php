@@ -7,7 +7,7 @@
  */
 
 namespace app\controller;
-use app\model\siteModel;
+use app\model\SiteModel;
 use app\BaseController;
 use think\facade\Db;
 
@@ -17,7 +17,7 @@ class site extends BaseController
 
     //站点列表
     public function datalist(){
-        $model = new siteModel();
+        $model = new SiteModel();
         $param = get_params();
         $where = [];
         if (!empty($param['keywords'])) {
@@ -31,7 +31,7 @@ class site extends BaseController
     //站点编辑
     public function edit(){
         $param = get_params();
-        $model = (new siteModel());
+        $model = (new SiteModel());
         $exist = $model->where("site_name",$param['site_name'])->find();
         if(isset($param['id']) && $param['id']){
             if($exist){
@@ -71,13 +71,13 @@ class site extends BaseController
     public function del(){
         $param = get_params();
         if(is_array($param["id"])){
-            if((new siteModel())->where("id","in",$param["id"])->delete()){
+            if((new SiteModel())->where("id","in",$param["id"])->delete()){
                 $this->apiSuccess("删除成功");
             }else{
                 $this->apiSuccess("删除失败");
             }
         }else{
-            if((new siteModel())->where("id",$param["id"])->delete()){
+            if((new SiteModel())->where("id",$param["id"])->delete()){
                 $this->apiSuccess("删除成功");
             }else{
                 $this->apiSuccess("删除失败");
