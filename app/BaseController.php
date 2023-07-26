@@ -88,7 +88,7 @@ abstract class BaseController
      * @return mixed
      * @throws ReturnException
      */
-    protected function apiSuccess($msg = 'success',$data=[])
+    protected function apiSuccess($data=[],$msg = 'success')
     {
 		return $this->apiReturn($data, 0, $msg);
     }
