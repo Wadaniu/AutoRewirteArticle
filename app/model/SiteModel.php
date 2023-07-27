@@ -37,7 +37,7 @@ class SiteModel extends Model
             return [];
         }
 
-        $query = self::where('user_id',$user_id);
+        $query = self::where('uid',$user_id)->where('status',1);
         if (!empty($id)){
             $query->where('id',$id);
         }

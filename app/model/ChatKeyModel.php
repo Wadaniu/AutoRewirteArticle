@@ -32,7 +32,13 @@ class ChatKeyModel extends Model
         return $res;
     }
 
-
+    public function getKeysByUser($uid = 0)
+    {
+        if (empty($uid)){
+            return [];
+        }
+        return self::where('uid',$uid)->where('status',1)->select()->toArray();
+    }
 
 
 }
