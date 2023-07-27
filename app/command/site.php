@@ -12,6 +12,8 @@ use app\model\siteModel;
 use think\facade\Db;
 use app\model\testModel;
 use think\db\Connection;
+use app\exception\PDOConnect;
+
 
 class site extends Command
 {
@@ -25,14 +27,15 @@ class site extends Command
     protected function execute(Input $input, Output $output)
     {
         $config = [];
-        $config['hostname'] = '127.0.0.1';
-        $config['database'] = 'truedata';
+        $config['host'] = '127.0.0.1';
+        $config['db'] = 'truedata';
         $config['username'] = 'root';
         $config['password'] = 'root';
-        $this->a1($config);
+        //$this->a1($config);
+        $this->a2($config);
     }
     function a1($config){
-        $conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config['database']);
+        $conn = \mysqli_connect($config['hostname'], $config['username'], $config['password'], $config['database']);
         if (mysqli_connect_errno()) {
             echo "连接 MySQL 数据库失败：" . mysqli_connect_error();
             exit;
@@ -47,5 +50,12 @@ class site extends Command
             echo "没有查询到数据！";
         }
         mysqli_close($conn);
+    }
+
+    function a2($config){
+        //$pdo = new PDOConnect($config['host'],$config['username'],$config['password'],$config['db']);
+        $pdo = new PDOConnect($config);
+        $res = $pdo->query("SELECT * FROM fb_football_competition order by id desc limit 5");
+        print_r($res);
     }
 }

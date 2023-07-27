@@ -1,6 +1,7 @@
 <?php
 
 namespace app\exception;
+use \PDO;
 class PDOConnect
 {
 
@@ -71,4 +72,9 @@ class PDOConnect
         }
     }
 }
+
+
+
+
+
 
