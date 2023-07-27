@@ -2,6 +2,8 @@
 
 namespace app\exception;
 use \PDO;
+use PDOException;
+
 class PDOConnect
 {
 
