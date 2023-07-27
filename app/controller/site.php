@@ -24,6 +24,9 @@ class site extends BaseController
             $where[] = ['site_name|username|db', 'like', '%' . $param['keywords'] . '%'];
         }
         $list = $model->datalist($where,$param);
+        foreach ($list['data'] as $k=>$v){
+            $list['data'][$k]['createdAt'] = date("Y-m-d H:i:s",$v['createdAt']);
+        }
         $this->apiSuccess("success",$list);
     }
 

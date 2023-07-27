@@ -19,6 +19,10 @@ class chatkey extends BaseController
     public function datalist(){
         $model = new ChatKeyModel();
         $list = $model->datalist([],get_params());
+        foreach ($list['data'] as $k=>$v){
+            $list['data'][$k]['createdAt'] = date("Y-m-d H:i:s",$v['createdAt']);
+            $list['data'][$k]['updateAt'] = date("Y-m-d H:i:s",$v['updateAt']);
+        }
         $this->apiSuccess("success",$list);
     }
 
