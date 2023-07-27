@@ -71,6 +71,11 @@ class PDOConnect
             die('删除失败: ' . $e->getMessage());
         }
     }
+
+
+    public function closeConnect(){
+        $this->pdo->closeCursor();
+    }
 }
 
 
