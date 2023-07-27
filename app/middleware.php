@@ -9,4 +9,5 @@ return [
     // \think\middleware\SessionInit::class
     //验证操作
 //    \app\middleware\Auth::class,
+    \think\middleware\AllowCrossDomain::class
 ];

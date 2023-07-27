@@ -4,6 +4,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\LabelModel;
+use app\model\siteModel;
 use app\model\UserOrderModel;
 use think\Exception;
 
@@ -35,6 +36,10 @@ class Label extends BaseController
             $order = $orderModel->getByUser($login_user['id'],2);
 
             //获取站点配置
+            $siteModel = new SiteModel();
+            $sites = $siteModel->getData($params['site'],$login_user['id']);
+
+            
         }catch (Exception $e){
             $this->apiError($e->getCode(),$e->getMessage());
         }

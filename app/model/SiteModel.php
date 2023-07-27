@@ -11,7 +11,7 @@ use think\Model;
 use think\facade\Db;
 
 
-class siteModel extends Model
+class SiteModel extends Model
 {
     protected $name = 'chat_site';
     protected $pk = 'id';
@@ -32,7 +32,18 @@ class siteModel extends Model
         return $res;
     }
 
+    public function getData($id = 0,$user_id = 0){
+        if (empty($user_id)){
+            return [];
+        }
 
+        $query = self::where('user_id',$user_id);
+        if (!empty($id)){
+            $query->where('id',$id);
+        }
+
+        return $query->select()->toArray();
+    }
 
 
 }
