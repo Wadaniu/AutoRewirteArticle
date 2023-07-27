@@ -37,9 +37,9 @@ class Label extends BaseController
 
             //获取站点配置
             $siteModel = new SiteModel();
-            $sites = $siteModel->getData($params['site'],$login_user['id']);
+            $sites = $siteModel->getDataByUser($params['site'],$login_user['id']);
 
-            
+
         }catch (Exception $e){
             $this->apiError($e->getCode(),$e->getMessage());
         }

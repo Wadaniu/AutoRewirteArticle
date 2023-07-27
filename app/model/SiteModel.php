@@ -32,7 +32,7 @@ class SiteModel extends Model
         return $res;
     }
 
-    public function getData($id = 0,$user_id = 0){
+    public function getDataByUser($id = 0,$user_id = 0){
         if (empty($user_id)){
             return [];
         }
