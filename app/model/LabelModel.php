@@ -14,8 +14,11 @@ class LabelModel extends Model
      * @return \think\Paginator
      * @throws \think\db\exception\DbException
      */
-    public function getList($param,$site = '',$limit = 10){
-        $query = self::where("1 = 1");
+    public function getList($uid,$param,$site = '',$limit = 10){
+        if (empty($uid)){
+            return [];
+        }
+        $query = self::where("uid",$uid);
         if (!empty($site)){
             $query->where('site_id',$site);
         }
