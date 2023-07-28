@@ -11,11 +11,19 @@ class ChatGPT {
         $this->apiKey = $apiKey;
     }
 
-    public function sendRequest($prompt, $model = 'curie', $maxTokens = 100) {
+    public function sendRequest($message, $model = 'gpt-3.5-turbo') {
         $data = array(
             'model' => $model,
-            'prompt' => $prompt,
-            'max_tokens' => $maxTokens
+            'messages' => [
+                [
+                    'role'  => "system",
+                    'content'   =>  "You are a helpful assistant."
+                ],
+                [
+                    'role'  => "user",
+                    'content'   =>  $message
+                ]
+            ]
         );
 
         $headers = array(
