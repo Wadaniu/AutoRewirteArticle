@@ -33,7 +33,7 @@ class KeyPool {
         $chatGPT = new ChatGPT($key);
 
         $message = "test connection";
-        $response = $chatGPT->sendMessage($message);
+        $response = $chatGPT->sendRequest($message);
 
         // 这里根据实际情况判断响应是否有效
         return $response !== false;
