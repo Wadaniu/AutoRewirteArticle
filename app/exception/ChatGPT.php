@@ -11,29 +11,28 @@ class ChatGPT {
         $this->apiKey = $apiKey;
     }
 
-    public function sendMessage($message) {
-        return $this->sendRequest($message);
-    }
-
-    private function sendRequest($message) {
+    public function sendRequest($prompt, $model = 'curie', $maxTokens = 100) {
         $data = array(
-            'message' => $message,
-            'apiKey' => $this->apiKey
+            'model' => $model,
+            'prompt' => $prompt,
+            'max_tokens' => $maxTokens
+        );
+
+        $headers = array(
+            'Authorization: Bearer ' . $this->apiKey,
+            'Content-Type: application/json'
         );
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
+        curl_close($ch);
 
-        if ($response === false) {
-            return false;
-        } else {
-            $result = json_decode($response, true);
-            return $result['message'];
-        }
+        return json_decode($response, true);
     }
 }
