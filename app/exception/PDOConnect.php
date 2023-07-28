@@ -94,6 +94,11 @@ class PDOConnect
             throw new \think\Exception('删除失败: ' . $e->getMessage(), 504);
         }
     }
+
+
+    public function closeConnect(){
+        $this->pdo->closeCursor();
+    }
 }
 
 

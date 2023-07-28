@@ -37,11 +37,11 @@ class site extends BaseController
         $model = (new SiteModel());
         $exist = $model->where("site_name",$param['site_name'])->find();
         if(isset($param['id']) && $param['id']){
-            if($exist){
+            if($exist && $param['id']!=$exist->id){
                 $this->apiError($param['site_name']."已存在");
             }
         }else{
-            if($exist && $param['id']!=$exist->id){
+            if($exist){
                 $this->apiError($param['site_name']."已存在");
             }
         }
@@ -86,5 +86,11 @@ class site extends BaseController
                 $this->apiSuccess("删除失败");
             }
         }
+    }
+
+
+
+    public function deallabel(){
+
     }
 }
