@@ -17,7 +17,7 @@ class ChatGPT {
             'messages' => [
                 [
                     'role'  => "system",
-                    'content'   =>  "You are a helpful assistant."
+                    'content'   =>  "You're a senior sports editor."
                 ],
                 [
                     'role'  => "user",
