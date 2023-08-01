@@ -33,11 +33,11 @@ class chatkey extends BaseController
         $model = (new ChatKeyModel());
         $exist = $model->where("key",$param['key'])->find();
         if(isset($param['id']) && $param['id']){
-            if($exist){
+            if($exist && $param['id']!=$exist->id){
                 $this->apiError($param['key']."已存在");
             }
         }else{
-            if($exist && $param['id']!=$exist->id){
+            if($exist){
                 $this->apiError($param['key']."已存在");
             }
         }

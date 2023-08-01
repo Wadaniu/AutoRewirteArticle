@@ -10,7 +10,7 @@ namespace app\controller;
 use app\model\SiteModel;
 use app\BaseController;
 use think\facade\Db;
-
+use think\facade\Cache;
 
 class site extends BaseController
 {
@@ -91,6 +91,13 @@ class site extends BaseController
 
 
     public function deallabel(){
+        $_data = file_get_contents('php://input');
+        try{
+            Cache::store('redis')->RPUSH('labelqueue',$_data);
+            return $_data;
+        }catch(Exception $e){
+            echo $e->getMessage()."\n";
+        }
 
     }
 }
