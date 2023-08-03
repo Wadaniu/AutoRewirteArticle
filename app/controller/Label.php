@@ -76,7 +76,7 @@ class Label extends BaseController
                     $command = str_replace('content_len',$order['content_len'],$command);
 
                     retry:
-                    $res = $gpt->sendMessage($command);
+                    $res = $gpt->sendRequest($command);
                     if ($res === false){
                         //如果返回失败获取下一个可用key,并且重新实例化一个gpt对象
                         $key = $keyPool->getAvailableKey();
