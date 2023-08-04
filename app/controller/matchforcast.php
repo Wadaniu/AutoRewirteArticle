@@ -55,17 +55,12 @@ class matchforcast extends BaseController
         }
     }
 
-    public function start(){
+    public function startFootball(){
         set_time_limit(0);
         try {
-            $login_user = get_login_user();
-            if (empty($login_user)) {
-                throw new \think\Exception('请重新登录', 300);
-            }
-
             //获取生成标签描述指令配置
             $orderModel = new UserOrderModel();
-            $order = $orderModel->getByUser($login_user['id'],3);
+            $order = $orderModel->getByType(3);
             if (empty($order)){
                 throw new \think\Exception('未配置生成赛事预测相关指令', 401);
             }
@@ -75,7 +70,7 @@ class matchforcast extends BaseController
 
             //获取链接池秘钥
             $keyModel = new ChatKeyModel();
-            $keys = $keyModel->getKeysByUser($login_user['id']);
+            $keys = $keyModel->getAll();
             if (count($keys) <= 0){
                 throw new \think\Exception('无可用key,请上传可用key', 401);
             }
@@ -90,6 +85,45 @@ class matchforcast extends BaseController
             $res = $gpt->sendRequest($order['order']);
             //gpt结果写入数据
             Db::connect('compDataDb')->name('football_match')
+                ->where('id',$order['match_id'])->update(['forecast'=>$res['choices'][0]['message']['content']]);
+
+            //将日志写入生成对阵预测日志
+            $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+        }catch (Exception $e){
+            $this->apiError($e->getCode(),$e->getMessage());
+        }
+    }
+
+    public function startBasketball(){
+        set_time_limit(0);
+        try {
+            //获取生成标签描述指令配置
+            $orderModel = new UserOrderModel();
+            $order = $orderModel->getByType(3);
+            if (empty($order)){
+                throw new \think\Exception('未配置生成赛事预测相关指令', 401);
+            }
+
+            $model = new MatchForcastLogModel();
+            $order = $model->replaceOrder($order);
+
+            //获取链接池秘钥
+            $keyModel = new ChatKeyModel();
+            $keys = $keyModel->getAll();
+            if (count($keys) <= 0){
+                throw new \think\Exception('无可用key,请上传可用key', 401);
+            }
+            //获取可用key
+            $keyPool = new KeyPool($keys,$keyModel);
+            $key = $keyPool->getAvailableKey();
+            if ($key === false){
+                throw new \think\Exception('无可用key,请上传可用key', 401);
+            }
+            //调用gpt
+            $gpt = new ChatGPT($key);
+            $res = $gpt->sendRequest($order['order']);
+            //gpt结果写入数据
+            Db::connect('compDataDb')->name('basketball_match')
                 ->where('id',$order['match_id'])->update(['forecast'=>$res['choices'][0]['message']['content']]);
 
             //将日志写入生成对阵预测日志

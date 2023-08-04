@@ -14,4 +14,8 @@ class UserOrderModel extends Model
 
         return self::where(['uid' => $user_id,'type'=>$type])->findOrEmpty();
     }
+
+    public function getByType($type = 1){
+        return self::where('type',$type)->findOrEmpty();
+    }
 }

@@ -32,7 +32,7 @@ class ChatKeyModel extends Model
         return $res;
     }
 
-    public function getKeysByUser($uid = 0)
+    public function getKeysByUser($uid = 0): array
     {
         if (empty($uid)){
             return [];
@@ -40,5 +40,8 @@ class ChatKeyModel extends Model
         return self::where('uid',$uid)->where('status',1)->column('key');
     }
 
-
+    public function getAll(): array
+    {
+        return self::where('status',1)->column('key');
+    }
 }
