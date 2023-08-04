@@ -35,8 +35,12 @@ class KeyPool {
         $message = "test connection";
         $response = $chatGPT->sendRequest($message);
 
+        if (!isset($response['choices']) || is_null($response)){
+            return  false;
+        }
+
         // 这里根据实际情况判断响应是否有效
-        return $response !== false;
+        return true;
         // 返回 true 表示密钥可用，返回 false 表示密钥不可用
     }
 
@@ -49,9 +53,10 @@ class KeyPool {
 
     private function recordFailedKeyToDatabase($key) {
         // 在这里添加将失败的密钥记录到数据库的逻辑
-        $this->keyModel->where('key',$key)->find();
-        $this->keyModel->status = 0;
-        $this->keyModel->last_notice = '连接失败';
-        $this->keyModel->save();
+        $update = [
+            'status' => 0,
+            'last_notice'   =>  '连接失败'
+        ];
+        $this->keyModel->where('key',$key)->save($update);
     }
 }

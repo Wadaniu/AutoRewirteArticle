@@ -6,11 +6,12 @@ use think\Model;
 
 class UserOrderModel extends Model
 {
+    protected $name = 'user_order';
     public function getByUser($user_id = 0,$type = 1){
         if (empty($user_id)){
             return [];
         }
 
-        return self::where(['user_id' => $user_id,'type'=>$type])->find();
+        return self::where(['uid' => $user_id,'type'=>$type])->findOrEmpty();
     }
 }

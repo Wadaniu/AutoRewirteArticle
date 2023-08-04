@@ -55,7 +55,7 @@ class MatchForcastLogModel extends Model
             ->value('parmars');
         $Ids = json_decode($Ids,true);
 
-        if (!empty($footballIds)){
+        if (!empty($Ids)){
             //判断是否已生成过赛事预判
             $checkedFootballIds = Db::connect('compDataDb')->name($matchTable)
                 ->where('id','in',$Ids)
@@ -95,7 +95,7 @@ class MatchForcastLogModel extends Model
         }
     }
 
-    public function replaceOrder($type = 0,$order = ''){
+    public function replaceOrder($order,$type = 0){
         if (empty($order)){
             return false;
         }
@@ -109,7 +109,6 @@ class MatchForcastLogModel extends Model
             $matchInfoTable = 'football_match_info';
             $matchInfoField = 'history,info,home_zr,away_zr';
         }
-
         //获取一个缓存
         $cache = Cache::get($cacheName,[]);
         if (empty($cache)){
@@ -119,11 +118,10 @@ class MatchForcastLogModel extends Model
         $matchId = array_splice($cache,0,1);
         //将id重新保存
         Cache::set($cacheName,$cache);
-
         //根据id获取历史交锋数据以及队伍排名
         $matchInfo = Db::connect('compDataDb')->name($matchInfoTable)
             ->field($matchInfoField)
-            ->where('match_id',$matchId)
+            ->where('match_id',$matchId[0])
             ->find();
 
         $info = json_decode($matchInfo['info'],true);
@@ -137,9 +135,9 @@ class MatchForcastLogModel extends Model
 
             //遍历阵容数据,仅足球有阵容数据
             if ($type == 0){
-                if (!is_null($matchInfo['hone_zr'])){
+                if (!is_null($matchInfo['home_zr'])){
                     $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
-                    foreach (json_decode($matchInfo['hone_zr'],true) as $home_zr){
+                    foreach (json_decode($matchInfo['home_zr'],true) as $home_zr){
                         $homeFirst .= $home_zr['name'].',';
                     }
                     $vsStr .= $homeFirst.'}';
@@ -154,49 +152,47 @@ class MatchForcastLogModel extends Model
             }
 
             //遍历历史数据
-            foreach (json_decode($matchInfo['history'],true) as $history){
-                if (!empty($history['vs'])){
-                    $vsHistoryStr = '以下为两队历史交锋数据{';
-                    foreach ($history['vs'] as $vs){
-                        //对阵数据字符串
-                        $matchStr = $this->formatVsHistory($vs,$type);
-                        $vsHistoryStr .= $matchStr;
-                    }
-                    $vsStr .= $vsHistoryStr.'}。';
+            $history = json_decode($matchInfo['history'],true);
+            if (!empty($history['vs'])){
+                $vsHistoryStr = '以下为两队历史交锋数据{';
+                foreach ($history['vs'] as $vs){
+                    //对阵数据字符串
+                    $matchStr = $this->formatVsHistory($vs,$type);
+                    $vsHistoryStr .= $matchStr;
                 }
-                if (!empty($history['home'])){
-                    $homeHistoryStr = '以下为'.$info['home_team_text'].'近期比赛数据{';
-                    foreach ($history['home'] as $home){
-                        $matchStr = $this->formatVsHistory($home,$type);
-                        $homeHistoryStr .= $matchStr;
-                    }
-                    $vsStr .= $homeHistoryStr.'}。';
-                }
-                if (!empty($history['away'])){
-                    $awayHistoryStr = '以下为'.$info['away_team_text'].'近期比赛数据{';
-                    foreach ($history['home'] as $home){
-                        $matchStr = $this->formatVsHistory($home,$type);
-                        $awayHistoryStr .= $matchStr;
-                    }
-                    $vsStr .= $awayHistoryStr.'}。';
-                }
+                $vsStr .= $vsHistoryStr.'}。';
             }
-
-            //替换指令变量
-            str_replace('data',$vsStr,$order);
+            if (!empty($history['home'])){
+                $homeHistoryStr = '以下为'.$info['home_team_text'].'近期比赛数据{';
+                foreach ($history['home'] as $home){
+                    $matchStr = $this->formatVsHistory($home,$type);
+                    $homeHistoryStr .= $matchStr;
+                }
+                $vsStr .= $homeHistoryStr.'}。';
+            }
+            if (!empty($history['away'])){
+                $awayHistoryStr = '以下为'.$info['away_team_text'].'近期比赛数据{';
+                foreach ($history['home'] as $home){
+                    $matchStr = $this->formatVsHistory($home,$type);
+                    $awayHistoryStr .= $matchStr;
+                }
+                $vsStr .= $awayHistoryStr.'}。';
+            }
+            $gptOrder = str_replace(['data', 'len'], [$vsStr,$order->content_len], $order->content_order);
             //将log写入日志
             $log = [
                 'title' =>  $info['home_team_text'] . 'VS' . $info['away_team_text'],
                 'addtime'   =>  time(),
                 'competion' =>  $info['competition_text'],
                 'bat_time'  =>  date('Y-m-d H:i:s',$info['match_time']),
-                'gpt_order' =>  $order
+                'gpt_order' =>  $gptOrder
             ];
 
             $model = self::create($log);
             return [
-                'id'    =>  $model->id,
-                'order' =>  $order
+                'log_id'    =>  $model->id,
+                'order' =>  $gptOrder,
+                'match_id'  =>  $matchId[0]
             ];
         }
 

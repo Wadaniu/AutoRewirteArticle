@@ -37,7 +37,7 @@ class ChatKeyModel extends Model
         if (empty($uid)){
             return [];
         }
-        return self::where('uid',$uid)->where('status',1)->select()->toArray();
+        return self::where('uid',$uid)->where('status',1)->column('key');
     }
 
 
