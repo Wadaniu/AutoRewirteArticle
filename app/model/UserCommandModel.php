@@ -4,10 +4,10 @@ namespace app\model;
 
 use think\Model;
 
-class ReplaceModel extends Model
+class UserCommandModel extends Model
 {
 
-    protected $name = 'replace';
+    protected $name = 'user_command';
     protected $pk = 'id';
 
     const NEWSTYPE = 1;
