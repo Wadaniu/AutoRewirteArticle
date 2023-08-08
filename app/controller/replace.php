@@ -9,6 +9,7 @@
 namespace app\controller;
 use app\model\ReplaceModel;
 use app\BaseController;
+use think\exception\ValidateException;
 use think\facade\Db;
 
 
@@ -44,6 +45,7 @@ class replace extends BaseController
         $row->replace = $param['replace'];
         $row->status = $param['status'];
         $row->type = $param['type'];
+        $row->order_type = $param['order_type'];
         if(empty($param['id'])){
             $row->addtime = time();
         }
@@ -74,5 +76,16 @@ class replace extends BaseController
                 $this->apiSuccess("删除失败");
             }
         }
+    }
+
+    public function getByType(): array
+    {
+        $model = new ReplaceModel();
+        $param = get_params();
+        if (isset($param['type']) && !empty($param['type'])){
+            $model = $model->where('type','=',$param['type']);
+        }
+        $list = $model->select()->toArray();
+        return $this->apiSuccess("success",$list);
     }
 }
