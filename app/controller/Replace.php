@@ -13,7 +13,7 @@ use think\exception\ValidateException;
 use think\facade\Db;
 
 
-class replace extends BaseController
+class Replace extends BaseController
 {
 
     //站点列表

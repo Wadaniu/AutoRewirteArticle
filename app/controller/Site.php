@@ -12,7 +12,7 @@ use app\BaseController;
 use think\facade\Db;
 use think\facade\Cache;
 
-class site extends BaseController
+class Site extends BaseController
 {
 
     //站点列表

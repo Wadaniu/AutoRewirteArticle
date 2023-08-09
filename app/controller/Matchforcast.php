@@ -17,7 +17,7 @@ use think\Exception;
 use think\facade\Db;
 use think\facade\Cache;
 
-class matchforcast extends BaseController
+class Matchforcast extends BaseController
 {
 
     //站点列表
