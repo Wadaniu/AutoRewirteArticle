@@ -18,7 +18,7 @@ class UserOrderModel extends Model
      * @param $param
      * @param $site
      * @param $limit
-     * @return \think\Paginator
+     * @return array|\think\Paginator
      * @throws \think\db\exception\DbException
      */
     public function datalist($where,$param){
