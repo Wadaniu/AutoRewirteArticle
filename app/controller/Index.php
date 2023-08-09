@@ -158,20 +158,4 @@ class Index extends BaseController
             $this->apiError('注册失败');
         }
     }
-
-    /**
-     * @api {post} /index/demo 测试页面
-     * @apiDescription  返回文章列表信息
-
-     * @apiParam (请求参数：) {string}  token Token
-
-     * @apiSuccessExample {json} 响应数据样例
-     * {"code":1,"msg":"","time":1563517637,"data":{"id":13,"email":"test110@qq.com","password":"e10adc3949ba59abbe56e057f20f883e","sex":1,"last_login_time":1563517503,"last_login_ip":"127.0.0.1","qq":"123455","mobile":"","mobile_validated":0,"email_validated":0,"type_id":1,"status":1,"create_ip":"127.0.0.1","update_time":1563507130,"create_time":1563503991,"type_name":"注册会员"}}
-     */
-    public function demo()
-    {
-        $uid = JWT_UID;
-        $userInfo = Db::name('User')->where(['id' => $uid])->find();
-        $this->apiSuccess('请求成功', ['user' => $userInfo]);
-    }
 }
