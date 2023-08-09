@@ -14,7 +14,7 @@ use think\exception\ValidateException;
 use think\facade\Db;
 
 
-class command extends BaseController
+class Command extends BaseController
 {
 
     //站点列表
