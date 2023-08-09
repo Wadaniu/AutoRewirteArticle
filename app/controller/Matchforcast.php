@@ -64,10 +64,6 @@ class Matchforcast extends BaseController
             if (empty($order)){
                 throw new \think\Exception('未配置生成赛事预测相关指令', 401);
             }
-
-            $model = new MatchForcastLogModel();
-            $order = $model->replaceOrder($order);
-
             //获取链接池秘钥
             $keyModel = new ChatKeyModel();
             $keys = $keyModel->getAll();
@@ -80,6 +76,10 @@ class Matchforcast extends BaseController
             if ($key === false){
                 throw new \think\Exception('无可用key,请上传可用key', 401);
             }
+
+            $model = new MatchForcastLogModel();
+            $order = $model->replaceOrder($order);
+
             //调用gpt
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
@@ -103,10 +103,6 @@ class Matchforcast extends BaseController
             if (empty($order)){
                 throw new \think\Exception('未配置生成赛事预测相关指令', 401);
             }
-
-            $model = new MatchForcastLogModel();
-            $order = $model->replaceOrder($order);
-
             //获取链接池秘钥
             $keyModel = new ChatKeyModel();
             $keys = $keyModel->getAll();
@@ -119,6 +115,10 @@ class Matchforcast extends BaseController
             if ($key === false){
                 throw new \think\Exception('无可用key,请上传可用key', 401);
             }
+
+            $model = new MatchForcastLogModel();
+            $order = $model->replaceOrder($order);
+
             //调用gpt
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
