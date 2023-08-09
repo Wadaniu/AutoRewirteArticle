@@ -178,7 +178,7 @@ class MatchForcastLogModel extends Model
                 }
                 $vsStr .= $awayHistoryStr.'}。';
             }
-            $gptOrder = str_replace(['data', 'len'], [$vsStr,$order->content_len], $order->content_order);
+            $gptOrder = str_replace(['data', 'len'], [$vsStr,$order->content_len], $order->content);
             //将log写入日志
             $log = [
                 'title' =>  $info['home_team_text'] . 'VS' . $info['away_team_text'],
