@@ -9,6 +9,8 @@
 namespace app\controller;
 use app\model\UserCommandModel;
 use app\BaseController;
+use app\model\UserOrderModel;
+use think\exception\ValidateException;
 use think\facade\Db;
 
 
@@ -17,7 +19,7 @@ class command extends BaseController
 
     //站点列表
     public function datalist(){
-        $model = new UserCommandModel();
+        $model = new UserOrderModel();
         $param = get_params();
         $where = [];
         if (!empty($param['keywords'])) {
@@ -35,7 +37,7 @@ class command extends BaseController
     //站点编辑
     public function edit(){
         $param = get_params();
-        $model = (new UserCommandModel());
+        $model = (new UserOrderModel());
         if(isset($param['id']) && $param['id']){
             $row = $model->where("id",$param['id'])->find();
         }else{
@@ -45,6 +47,8 @@ class command extends BaseController
         $row->content = $param['content'];
         $row->status = $param['status'];
         $row->type = $param['type'];
+        $row->title_len = $param['title_len'];
+        $row->content_len = $param['content_len'];
         $row->updatedAt = time();
         if(empty($param['id'])){
             $row->createdAt = time();
@@ -64,13 +68,13 @@ class command extends BaseController
     public function del(){
         $param = get_params();
         if(is_array($param["id"])){
-            if((new UserCommandModel())->where("id","in",$param["id"])->delete()){
+            if((new UserOrderModel())->where("id","in",$param["id"])->delete()){
                 $this->apiSuccess("删除成功");
             }else{
                 $this->apiSuccess("删除失败");
             }
         }else{
-            if((new UserCommandModel())->where("id",$param["id"])->delete()){
+            if((new UserOrderModel())->where("id",$param["id"])->delete()){
                 $this->apiSuccess("删除成功");
             }else{
                 $this->apiSuccess("删除失败");
