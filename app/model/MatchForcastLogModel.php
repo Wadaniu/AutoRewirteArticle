@@ -116,6 +116,8 @@ class MatchForcastLogModel extends Model
         if (empty($cache)){
             return false;
         }
+
+        GetNext:
         //获取第一个id
         $matchId = array_splice($cache,0,1);
         //判断是否已生成预测
@@ -132,14 +134,21 @@ class MatchForcastLogModel extends Model
                 break;
             }
         }
-        //将id重新保存
-        Cache::set($cacheName,$cache);
+
         //根据id获取历史交锋数据以及队伍排名
         $matchInfo = Db::connect('compDataDb')->name($matchInfoTable)
             ->field($matchInfoField)
             ->where('match_id',$matchId[0])
-            ->find();
+            ->findOrEmpty();
 
+        if (is_null($matchInfo['info'])){
+            //如果详情数据有问题入队列goto取下一个
+            $cache[] = $matchId[0];
+            goto GetNext;
+        }
+        
+        //将id重新保存
+        Cache::set($cacheName,$cache);
         $info = json_decode($matchInfo['info'],true);
 
         //遍历历史交锋记录

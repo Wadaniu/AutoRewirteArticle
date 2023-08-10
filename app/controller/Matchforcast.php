@@ -79,7 +79,9 @@ class Matchforcast extends BaseController
 
             $model = new MatchForcastLogModel();
             $order = $model->replaceOrder($order);
-
+            if ($order === false){
+                throw new \think\Exception('赛事详情数据错误', 401);
+            }
             //调用gpt
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
@@ -141,6 +143,9 @@ class Matchforcast extends BaseController
 
             $model = new MatchForcastLogModel();
             $order = $model->replaceOrder($order);
+            if ($order === false){
+                throw new \think\Exception('赛事详情数据错误', 401);
+            }
 
             //调用gpt
             $gpt = new ChatGPT($key);
