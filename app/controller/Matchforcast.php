@@ -83,9 +83,31 @@ class Matchforcast extends BaseController
             //调用gpt
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
+            if (!isset($res['choices']) || is_null($res)){
+                $model->update(['id'=>$order['log_id'],'return'=>$res]);
+                throw new \think\Exception($res, 401);
+            }
+
+            $forecast = '';
+            //如果结果还未输出完全，则继续输出
+            while (true){
+                if ($res['choices'][0]['finish_reason'] == 'length'){
+                    $forecast .= $res['choices'][0]['message']['content'];
+                    $newOrder = $forecast.',接着往下写';
+                    $res = $gpt->sendRequest($newOrder);
+                    if (!isset($res['choices']) || is_null($res)){
+                        $model->update(['id'=>$order['log_id'],'return'=>$res]);
+                        throw new \think\Exception($res, 401);
+                    }
+                }else{
+                    $forecast .= $res['choices'][0]['message']['content'] ?? '';
+                    break;
+                }
+            }
+
             //gpt结果写入数据
             Db::connect('compDataDb')->name('football_match')
-                ->where('id',$order['match_id'])->update(['forecast'=>$res['choices'][0]['message']['content']]);
+                ->where('id',$order['match_id'])->update(['forecast'=>$forecast]);
 
             //将日志写入生成对阵预测日志
             $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
@@ -122,7 +144,7 @@ class Matchforcast extends BaseController
             //调用gpt
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
-            if (!isset($response['choices']) || is_null($response)){
+            if (!isset($res['choices']) || is_null($res)){
                 $model->update(['id'=>$order['log_id'],'return'=>$res]);
                 throw new \think\Exception($res, 401);
             }
@@ -134,7 +156,7 @@ class Matchforcast extends BaseController
                     $forecast .= $res['choices'][0]['message']['content'];
                     $newOrder = $forecast.',接着往下写';
                     $res = $gpt->sendRequest($newOrder);
-                    if (!isset($response['choices']) || is_null($response)){
+                    if (!isset($res['choices']) || is_null($res)){
                         $model->update(['id'=>$order['log_id'],'return'=>$res]);
                         throw new \think\Exception($res, 401);
                     }

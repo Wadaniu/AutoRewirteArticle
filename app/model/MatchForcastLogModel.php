@@ -79,8 +79,8 @@ class MatchForcastLogModel extends Model
             $matchTable = 'football_match';
         }
 
-        $startTime = strtotime(date('Y-m-d 00:00:00',time()));
-        $endTime = strtotime(date('Y-m-d 23:59:59',time()));
+        $startTime = strtotime(date('Y-m-d 00:00:00',time()).' +1 day');
+        $endTime = strtotime(date('Y-m-d 23:59:59',time()).' +1 day');
         //获取隔天所有赛事
         $matchs = Db::connect('compDataDb')->name($matchTable)
             ->where('match_time','BETWEEN',[$startTime,$endTime])
