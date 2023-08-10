@@ -104,10 +104,12 @@ class MatchForcastLogModel extends Model
             $cacheName = 'syncBasketballMatchInfoList';
             $matchInfoTable = 'basketball_match_info';
             $matchInfoField = 'history,info';
+            $matchTable = 'basketball_match';
         }else{
             $cacheName = 'syncFootballMatchInfoList';
             $matchInfoTable = 'football_match_info';
             $matchInfoField = 'history,info,home_zr,away_zr';
+            $matchTable = 'football_match';
         }
         //获取一个缓存
         $cache = Cache::get($cacheName,[]);
@@ -116,6 +118,20 @@ class MatchForcastLogModel extends Model
         }
         //获取第一个id
         $matchId = array_splice($cache,0,1);
+        //判断是否已生成预测
+        while (true){
+            $checkedFootballIds = Db::connect('compDataDb')->name($matchTable)
+                ->where('id','in',$matchId)
+                ->where('forecast','null')
+                ->column('id');
+
+            if (empty($checkedFootballIds)){
+                //为空说明已经有数据生成，找下个个id
+                $matchId = array_splice($cache,0,1);
+            }else{
+                break;
+            }
+        }
         //将id重新保存
         Cache::set($cacheName,$cache);
         //根据id获取历史交锋数据以及队伍排名

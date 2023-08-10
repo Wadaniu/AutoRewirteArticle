@@ -111,6 +111,7 @@ class Matchforcast extends BaseController
 
             //将日志写入生成对阵预测日志
             $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+            $this->apiSuccess("生成成功");
         }catch (Exception $e){
             $this->apiError($e->getCode(),$e->getMessage());
         }
@@ -172,6 +173,7 @@ class Matchforcast extends BaseController
 
             //将日志写入生成对阵预测日志
             $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+            $this->apiSuccess("生成成功");
         }catch (Exception $e){
             $this->apiError($e->getCode(),$e->getMessage());
         }
