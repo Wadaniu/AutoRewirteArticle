@@ -23,7 +23,8 @@ class ChatGPT {
                     'role'  => "user",
                     'content'   =>  $message
                 ]
-            ]
+            ],
+            "temperature" => 0.8
         );
 
         $headers = array(
