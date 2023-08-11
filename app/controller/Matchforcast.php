@@ -13,12 +13,20 @@ use app\model\ChatKeyModel;
 use app\model\MatchForcastLogModel;
 use app\BaseController;
 use app\model\UserOrderModel;
+use think\App;
 use think\Exception;
 use think\facade\Db;
 use think\facade\Cache;
 
 class Matchforcast extends BaseController
 {
+
+    public $model;
+    public function __construct(App $app)
+    {
+        parent::__construct($app);
+        $this->model = new MatchForcastLogModel();
+    }
 
     //站点列表
     public function datalist(){
@@ -34,8 +42,6 @@ class Matchforcast extends BaseController
         }
         $this->apiSuccess("success",$list);
     }
-
-
 
     //站点删除
     public function del(){
@@ -56,17 +62,35 @@ class Matchforcast extends BaseController
     }
 
     public function startFootball(){
+        $this->start();
+    }
+
+    public function startBasketball(){
+        $this->start(1);
+    }
+
+    public function start($type = 0){
         set_time_limit(0);
+        if ($type ==1){
+            $order = 'id ASC';
+            $matchTable = 'basketball_match';
+            $cacheName = 'syncBasketballMatchInfoList';
+        }else{
+            $order = '';
+            $matchTable = 'football_match';
+            $cacheName = 'syncFootballMatchInfoList';
+        }
+
         try {
             //获取生成标签描述指令配置
             $orderModel = new UserOrderModel();
-            $order = $orderModel->getByType(3);
-            if (empty($order)){
+            $instruct = $orderModel->getByType(3);
+            if (empty($instruct)){
                 throw new \think\Exception('未配置生成赛事预测相关指令', 401);
             }
             //获取链接池秘钥
             $keyModel = new ChatKeyModel();
-            $keys = $keyModel->getAll();
+            $keys = $keyModel->getAll($order);
             if (count($keys) <= 0){
                 throw new \think\Exception('无可用key,请上传可用key', 401);
             }
@@ -77,17 +101,13 @@ class Matchforcast extends BaseController
                 throw new \think\Exception('无可用key,请上传可用key', 401);
             }
 
-            $model = new MatchForcastLogModel();
-            $order = $model->replaceOrder($order);
-            if ($order === false){
-                throw new \think\Exception('赛事详情数据错误', 401);
-            }
+            $instruct = $this->model->replaceOrder($instruct,$type);
+
             //调用gpt
             $gpt = new ChatGPT($key);
-            $res = $gpt->sendRequest($order['order']);
+            $res = $gpt->sendRequest($instruct['order']);
             if (!isset($res['choices']) || is_null($res)){
-                $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
-                throw new \think\Exception(json_encode($res), 401);
+                $this->gptError($instruct,$keyPool,$key,$res,$cacheName);
             }
 
             $forecast = '';
@@ -98,8 +118,7 @@ class Matchforcast extends BaseController
                     $newOrder = $forecast.',接着往下写';
                     $res = $gpt->sendRequest($newOrder);
                     if (!isset($res['choices']) || is_null($res)){
-                        $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
-                        throw new \think\Exception(json_encode($res), 401);
+                        $this->gptError($instruct,$keyPool,$key,$res,$cacheName);
                     }
                 }else{
                     $forecast .= $res['choices'][0]['message']['content'] ?? '';
@@ -108,80 +127,31 @@ class Matchforcast extends BaseController
             }
 
             //gpt结果写入数据
-            Db::connect('compDataDb')->name('football_match')
-                ->where('id',$order['match_id'])->update(['forecast'=>$forecast]);
+            Db::connect('compDataDb')->name($matchTable)
+                ->where('id',$instruct['match_id'])->update(['forecast'=>$forecast]);
 
             //将日志写入生成对阵预测日志
-            $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+            $this->model->update(['id'=>$instruct['log_id'],'return'=>json_encode($res)]);
             $this->apiSuccess("生成成功");
         }catch (Exception $e){
             $this->apiError($e->getCode(),$e->getMessage());
         }
     }
 
-    public function startBasketball(){
-        set_time_limit(0);
-        try {
-            //获取生成标签描述指令配置
-            $orderModel = new UserOrderModel();
-            $order = $orderModel->getByType(3);
-            if (empty($order)){
-                throw new \think\Exception('未配置生成赛事预测相关指令', 401);
-            }
-            //获取链接池秘钥
-            $keyModel = new ChatKeyModel();
-            $keys = $keyModel->getAll('id ASC');
-            if (count($keys) <= 0){
-                throw new \think\Exception('无可用key,请上传可用key', 401);
-            }
-            //获取可用key
-            $keyPool = new KeyPool($keys,$keyModel);
-            $key = $keyPool->getAvailableKey();
-            if ($key === false){
-                throw new \think\Exception('无可用key,请上传可用key', 401);
-            }
+    /**
+     * @throws Exception
+     */
+    public function gptError($instruct, $keyPool, $key, $res, $cacheName){
+        //获取一个缓存
+        $cache = Cache::get($cacheName,[]);
+        //如果详情数据有问题入队列
+        $cache[] = $instruct['match_id'];
+        //将id重新保存
+        Cache::set($cacheName,$cache);
 
-            $model = new MatchForcastLogModel();
-            $order = $model->replaceOrder($order,1);
-            if ($order === false){
-                throw new \think\Exception('赛事详情数据错误', 401);
-            }
-
-            //调用gpt
-            $gpt = new ChatGPT($key);
-            $res = $gpt->sendRequest($order['order']);
-            if (!isset($res['choices']) || is_null($res)){
-                $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
-                throw new \think\Exception(json_encode($res), 401);
-            }
-
-            $forecast = '';
-            //如果结果还未输出完全，则继续输出
-            while (true){
-                if ($res['choices'][0]['finish_reason'] == 'length'){
-                    $forecast .= $res['choices'][0]['message']['content'];
-                    $newOrder = $forecast.',接着往下写';
-                    $res = $gpt->sendRequest($newOrder);
-                    if (!isset($res['choices']) || is_null($res)){
-                        $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
-                        throw new \think\Exception(json_encode($res), 401);
-                    }
-                }else{
-                    $forecast .= $res['choices'][0]['message']['content'] ?? '';
-                    break;
-                }
-            }
-
-            //gpt结果写入数据
-            Db::connect('compDataDb')->name('basketball_match')
-                ->where('id',$order['match_id'])->update(['forecast'=>$forecast]);
-
-            //将日志写入生成对阵预测日志
-            $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
-            $this->apiSuccess("生成成功");
-        }catch (Exception $e){
-            $this->apiError($e->getCode(),$e->getMessage());
-        }
+        $keyPool->markKeyAsFailed($key);
+        $this->model->update(['id'=>$instruct['log_id'],'return'=>json_encode($res)]);
+        throw new \think\Exception(json_encode($res), 401);
     }
 
     /**
@@ -190,10 +160,9 @@ class Matchforcast extends BaseController
      * @return void
      */
     public function syncMatchIds(){
-        //sleep(10);  //防止和同步赛程数据并发导致赛程id队列错误
-        $model = new MatchForcastLogModel();
-        $model->syncMatchIds();
-        $model->syncMatchIds(1);
+        sleep(10);  //防止和同步赛程数据并发导致赛程id队列错误
+        $this->model->syncMatchIds();
+        $this->model->syncMatchIds(1);
     }
 
     /**
@@ -201,8 +170,7 @@ class Matchforcast extends BaseController
      * @return void
      */
     public function setTomorrowMatch(){
-        $model = new MatchForcastLogModel();
-        $model->setTomorrowMatch();
-        $model->setTomorrowMatch(1);
+        $this->model->setTomorrowMatch();
+        $this->model->setTomorrowMatch(1);
     }
 }

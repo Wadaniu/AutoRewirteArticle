@@ -13,11 +13,7 @@ class KeyPool {
 
     public function getAvailableKey() {
         foreach ($this->apiKeys as $key) {
-            if ($this->isKeyAvailable($key)) {
-                return $key;
-            }else{
-                $this->markKeyAsFailed($key);
-            }
+            return $key;
         }
 
         return false;
