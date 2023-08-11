@@ -69,7 +69,7 @@ class MatchForcastLogModel extends Model
                 ->where('competition_id','in',$compIds)
                 ->where('forecast','null')
                 ->column('id');
-            
+
             //不为空则追加进缓存
             if (!empty($checkedFootballIds)){
                 $cache = Cache::get($cacheName,[]);

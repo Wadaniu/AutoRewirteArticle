@@ -170,7 +170,7 @@ class Matchforcast extends BaseController
      * @return void
      */
     public function setTomorrowMatch(){
-        $this->model->setTomorrowMatch();
-        $this->model->setTomorrowMatch(1);
+        $this->model->setHotCompMatch();
+        $this->model->setHotCompMatch(1);
     }
 }
