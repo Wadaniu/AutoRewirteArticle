@@ -44,9 +44,11 @@ class MatchForcastLogModel extends Model
         if ($type == 1){
             $cacheName = 'syncBasketballMatchInfoList';
             $matchTable = 'basketball_match';
+            $compTable = 'basketball_competition';
         }else{
             $cacheName = 'syncFootballMatchInfoList';
             $matchTable = 'football_match';
+            $compTable = 'football_competition';
         }
 
         //获取赛程同步ids
@@ -56,11 +58,18 @@ class MatchForcastLogModel extends Model
         $Ids = json_decode($Ids,true);
 
         if (!empty($Ids)){
+            //判断是否热门联赛中的赛事
+            //获取热门联赛
+            $compIds = Db::connect('compDataDb')->name($compTable)
+                ->where('status',1)->column('id');
+
             //判断是否已生成过赛事预判
             $checkedFootballIds = Db::connect('compDataDb')->name($matchTable)
                 ->where('id','in',$Ids)
+                ->where('competition_id','in',$compIds)
                 ->where('forecast','null')
                 ->column('id');
+            
             //不为空则追加进缓存
             if (!empty($checkedFootballIds)){
                 $cache = Cache::get($cacheName,[]);
@@ -70,27 +79,32 @@ class MatchForcastLogModel extends Model
         }
     }
 
-    public function setTomorrowMatch($type = 0){
+    public function setHotCompMatch($type = 0){
         if ($type == 1){
             $cacheName = 'syncBasketballMatchInfoList';
             $matchTable = 'basketball_match';
+            $compTable = 'basketball_competition';
         }else{
             $cacheName = 'syncFootballMatchInfoList';
             $matchTable = 'football_match';
+            $compTable = 'football_competition';
         }
 
-        $startTime = strtotime(date('Y-m-d 00:00:00',time()).' +1 day');
-        $endTime = strtotime(date('Y-m-d 23:59:59',time()).' +1 day');
-        //获取隔天所有赛事
-        $matchs = Db::connect('compDataDb')->name($matchTable)
-            ->where('match_time','BETWEEN',[$startTime,$endTime])
+        //获取热门联赛
+        $compIds = Db::connect('compDataDb')->name($compTable)
+            ->where('status',1)->column('id');
+
+        //根据热门联赛id获取赛事id
+        $matchIds = Db::connect('compDataDb')->name($matchTable)
+            ->where('match_time','>=',time())
+            ->where('competition_id','in',$compIds)
             ->where('forecast','null')
             ->column('id');
 
         //不为空则追加进缓存
-        if (!empty($matchs)){
+        if (!empty($matchIds)){
             $cache = Cache::get($cacheName,[]);
-            $idList = array_unique(array_merge($cache,$matchs));
+            $idList = array_unique(array_merge($cache,$matchIds));
             Cache::set($cacheName,$idList);
         }
     }

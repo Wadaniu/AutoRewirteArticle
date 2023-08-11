@@ -128,7 +128,7 @@ class Matchforcast extends BaseController
 
             //gpt结果写入数据
             Db::connect('compDataDb')->name($matchTable)
-                ->where('id',$instruct['match_id'])->update(['forecast'=>$forecast]);
+                ->where('id',$instruct['match_id'])->update(['forecast'=>$forecast,'forecast_time'=>time()]);
 
             //将日志写入生成对阵预测日志
             $this->model->update(['id'=>$instruct['log_id'],'return'=>json_encode($res)]);
