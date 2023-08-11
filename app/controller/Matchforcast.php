@@ -142,7 +142,7 @@ class Matchforcast extends BaseController
             }
 
             $model = new MatchForcastLogModel();
-            $order = $model->replaceOrder($order);
+            $order = $model->replaceOrder($order,1);
             if ($order === false){
                 throw new \think\Exception('赛事详情数据错误', 401);
             }
