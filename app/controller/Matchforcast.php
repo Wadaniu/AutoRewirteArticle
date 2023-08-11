@@ -169,7 +169,7 @@ class Matchforcast extends BaseController
      * 设置明天的比赛生成赛程预测
      * @return void
      */
-    public function setTomorrowMatch(){
+    public function setHotCompMatch(){
         $this->model->setHotCompMatch();
         $this->model->setHotCompMatch(1);
     }
