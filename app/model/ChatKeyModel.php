@@ -40,8 +40,8 @@ class ChatKeyModel extends Model
         return self::where('uid',$uid)->where('status',1)->column('key');
     }
 
-    public function getAll(): array
+    public function getAll($order = 'id DESC'): array
     {
-        return self::where('status',1)->column('key');
+        return self::where('status',1)->order($order)->column('key');
     }
 }

@@ -86,8 +86,8 @@ class Matchforcast extends BaseController
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
             if (!isset($res['choices']) || is_null($res)){
-                $model->update(['id'=>$order['log_id'],'return'=>$res]);
-                throw new \think\Exception($res, 401);
+                $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+                throw new \think\Exception(json_encode($res), 401);
             }
 
             $forecast = '';
@@ -98,8 +98,8 @@ class Matchforcast extends BaseController
                     $newOrder = $forecast.',接着往下写';
                     $res = $gpt->sendRequest($newOrder);
                     if (!isset($res['choices']) || is_null($res)){
-                        $model->update(['id'=>$order['log_id'],'return'=>$res]);
-                        throw new \think\Exception($res, 401);
+                        $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+                        throw new \think\Exception(json_encode($res), 401);
                     }
                 }else{
                     $forecast .= $res['choices'][0]['message']['content'] ?? '';
@@ -130,7 +130,7 @@ class Matchforcast extends BaseController
             }
             //获取链接池秘钥
             $keyModel = new ChatKeyModel();
-            $keys = $keyModel->getAll();
+            $keys = $keyModel->getAll('id ASC');
             if (count($keys) <= 0){
                 throw new \think\Exception('无可用key,请上传可用key', 401);
             }
@@ -151,8 +151,8 @@ class Matchforcast extends BaseController
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($order['order']);
             if (!isset($res['choices']) || is_null($res)){
-                $model->update(['id'=>$order['log_id'],'return'=>$res]);
-                throw new \think\Exception($res, 401);
+                $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+                throw new \think\Exception(json_encode($res), 401);
             }
 
             $forecast = '';
@@ -163,8 +163,8 @@ class Matchforcast extends BaseController
                     $newOrder = $forecast.',接着往下写';
                     $res = $gpt->sendRequest($newOrder);
                     if (!isset($res['choices']) || is_null($res)){
-                        $model->update(['id'=>$order['log_id'],'return'=>$res]);
-                        throw new \think\Exception($res, 401);
+                        $model->update(['id'=>$order['log_id'],'return'=>json_encode($res)]);
+                        throw new \think\Exception(json_encode($res), 401);
                     }
                 }else{
                     $forecast .= $res['choices'][0]['message']['content'] ?? '';

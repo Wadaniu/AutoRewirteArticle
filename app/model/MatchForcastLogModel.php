@@ -141,87 +141,86 @@ class MatchForcastLogModel extends Model
             ->where('match_id',$matchId[0])
             ->findOrEmpty();
 
-        if (is_null($matchInfo['info'])){
+        if (empty($matchInfo) || !isset($matchInfo['info']) || is_null($matchInfo['info'])){
             //如果详情数据有问题入队列goto取下一个
             $cache[] = $matchId[0];
             goto GetNext;
         }
-        
-        //将id重新保存
-        Cache::set($cacheName,$cache);
+
         $info = json_decode($matchInfo['info'],true);
-
-        //遍历历史交锋记录
-        $vsStr = '';
-
-        if (!empty($info)){
-            $vsStr .= '主场球队'.$info['home_team_text'].'赛季排名为'.$info['home_position'].
-                    ',客场球队'.$info['away_team_text'].'赛季排名为'.$info['away_position'];
-
-            //遍历阵容数据,仅足球有阵容数据
-            if ($type == 0){
-                if (!is_null($matchInfo['home_zr'])){
-                    $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
-                    foreach (json_decode($matchInfo['home_zr'],true) as $home_zr){
-                        $homeFirst .= $home_zr['name'].',';
-                    }
-                    $vsStr .= $homeFirst.'}';
-                }
-                if (!is_null($matchInfo['away_zr'])){
-                    $awayFirst = '以下是'.$info['away_team_text'].'客场首发阵容{';
-                    foreach (json_decode($matchInfo['away_zr'],true) as $away_zr){
-                        $awayFirst .= $away_zr['name'].',';
-                    }
-                    $vsStr .= $awayFirst.'}';
-                }
-            }
-
-            //遍历历史数据
-            $history = json_decode($matchInfo['history'],true);
-            if (!empty($history['vs'])){
-                $vsHistoryStr = '以下为两队历史交锋数据{';
-                foreach ($history['vs'] as $vs){
-                    //对阵数据字符串
-                    $matchStr = $this->formatVsHistory($vs,$type);
-                    $vsHistoryStr .= $matchStr;
-                }
-                $vsStr .= $vsHistoryStr.'}。';
-            }
-            if (!empty($history['home'])){
-                $homeHistoryStr = '以下为'.$info['home_team_text'].'近期比赛数据{';
-                foreach ($history['home'] as $home){
-                    $matchStr = $this->formatVsHistory($home,$type);
-                    $homeHistoryStr .= $matchStr;
-                }
-                $vsStr .= $homeHistoryStr.'}。';
-            }
-            if (!empty($history['away'])){
-                $awayHistoryStr = '以下为'.$info['away_team_text'].'近期比赛数据{';
-                foreach ($history['home'] as $home){
-                    $matchStr = $this->formatVsHistory($home,$type);
-                    $awayHistoryStr .= $matchStr;
-                }
-                $vsStr .= $awayHistoryStr.'}。';
-            }
-            $gptOrder = str_replace(['data', 'len'], [$vsStr,$order->content_len], $order->content);
-            //将log写入日志
-            $log = [
-                'title' =>  $info['home_team_text'] . 'VS' . $info['away_team_text'],
-                'addtime'   =>  time(),
-                'competion' =>  $info['competition_text'],
-                'bat_time'  =>  date('Y-m-d H:i:s',$info['match_time']),
-                'gpt_order' =>  $gptOrder
-            ];
-
-            $model = self::create($log);
-            return [
-                'log_id'    =>  $model->id,
-                'order' =>  $gptOrder,
-                'match_id'  =>  $matchId[0]
-            ];
+        if (empty($info)) {
+            //如果详情数据有问题入队列goto取下一个
+            $cache[] = $matchId[0];
+            goto GetNext;
         }
 
-        return false;
+        //将id重新保存
+        Cache::set($cacheName,$cache);
+
+        $vsStr = '主场球队'.$info['home_team_text'].'赛季排名为'.$info['home_position'].
+            ',客场球队'.$info['away_team_text'].'赛季排名为'.$info['away_position'];
+
+        //遍历阵容数据,仅足球有阵容数据
+        if ($type == 0){
+            if (!is_null($matchInfo['home_zr'])){
+                $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
+                foreach (json_decode($matchInfo['home_zr'],true) as $home_zr){
+                    $homeFirst .= $home_zr['name'].',';
+                }
+                $vsStr .= $homeFirst.'}';
+            }
+            if (!is_null($matchInfo['away_zr'])){
+                $awayFirst = '以下是'.$info['away_team_text'].'客场首发阵容{';
+                foreach (json_decode($matchInfo['away_zr'],true) as $away_zr){
+                    $awayFirst .= $away_zr['name'].',';
+                }
+                $vsStr .= $awayFirst.'}';
+            }
+        }
+
+        //遍历历史数据
+        $history = json_decode($matchInfo['history'],true);
+        if (!empty($history['vs'])){
+            $vsHistoryStr = '以下为两队历史交锋数据{';
+            foreach ($history['vs'] as $vs){
+                //对阵数据字符串
+                $matchStr = $this->formatVsHistory($vs,$type);
+                $vsHistoryStr .= $matchStr;
+            }
+            $vsStr .= $vsHistoryStr.'}。';
+        }
+        if (!empty($history['home'])){
+            $homeHistoryStr = '以下为'.$info['home_team_text'].'近期比赛数据{';
+            foreach ($history['home'] as $home){
+                $matchStr = $this->formatVsHistory($home,$type);
+                $homeHistoryStr .= $matchStr;
+            }
+            $vsStr .= $homeHistoryStr.'}。';
+        }
+        if (!empty($history['away'])){
+            $awayHistoryStr = '以下为'.$info['away_team_text'].'近期比赛数据{';
+            foreach ($history['home'] as $home){
+                $matchStr = $this->formatVsHistory($home,$type);
+                $awayHistoryStr .= $matchStr;
+            }
+            $vsStr .= $awayHistoryStr.'}。';
+        }
+        $gptOrder = str_replace(['data', 'len'], [$vsStr,$order->content_len], $order->content);
+        //将log写入日志
+        $log = [
+            'title' =>  $info['home_team_text'] . 'VS' . $info['away_team_text'],
+            'addtime'   =>  time(),
+            'competion' =>  $info['competition_text'],
+            'bat_time'  =>  date('Y-m-d H:i:s',$info['match_time']),
+            'gpt_order' =>  $gptOrder
+        ];
+
+        $model = self::create($log);
+        return [
+            'log_id'    =>  $model->id,
+            'order' =>  $gptOrder,
+            'match_id'  =>  $matchId[0]
+        ];
     }
 
     private function formatVsHistory($vs,$type): string
