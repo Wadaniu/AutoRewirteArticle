@@ -165,14 +165,18 @@ class MatchForcastLogModel extends Model
             if (!is_null($matchInfo['home_zr'])){
                 $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
                 foreach (json_decode($matchInfo['home_zr'],true) as $home_zr){
-                    $homeFirst .= $home_zr['name'].',';
+                    if ($home_zr['first'] == 1){
+                        $homeFirst .= $home_zr['name'].',';
+                    }
                 }
                 $vsStr .= $homeFirst.'}';
             }
             if (!is_null($matchInfo['away_zr'])){
                 $awayFirst = '以下是'.$info['away_team_text'].'客场首发阵容{';
                 foreach (json_decode($matchInfo['away_zr'],true) as $away_zr){
-                    $awayFirst .= $away_zr['name'].',';
+                    if ($away_zr['first'] == 1){
+                        $awayFirst .= $away_zr['name'].',';
+                    }
                 }
                 $vsStr .= $awayFirst.'}';
             }
