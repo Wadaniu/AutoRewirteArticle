@@ -67,6 +67,7 @@ class MatchForcastLogModel extends Model
             $checkedFootballIds = Db::connect('compDataDb')->name($matchTable)
                 ->where('id','in',$Ids)
                 ->where('competition_id','in',$compIds)
+                ->where('match_time','>',time())
                 ->where('forecast','null')
                 ->column('id');
 

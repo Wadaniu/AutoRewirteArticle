@@ -151,4 +151,12 @@ class Chatkey extends BaseController
         ChatKeyModel::insertAll($insert);
         $this->apiSuccess("处理成功");
     }
+
+    public function resetKey(){
+        $model = new ChatKeyModel();
+        $model->update([
+            'status'    =>  1,
+            'last_notice'   =>  NULL
+        ]);
+    }
 }
