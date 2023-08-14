@@ -208,7 +208,7 @@ class MatchForcastLogModel extends Model
             $vsStr .= $vsHistoryStr.'}。';
         }
         if (!empty($history['home'])){
-            $homeHistoryStr = '以下为'.$info['home_team_text'].'近期比赛数据{';
+            $homeHistoryStr = '以下为主场'.$info['home_team_text'].'近期比赛数据{';
             foreach ($history['home'] as $home){
                 $matchStr = $this->formatVsHistory($home,$type);
                 $homeHistoryStr .= $matchStr;
@@ -216,7 +216,7 @@ class MatchForcastLogModel extends Model
             $vsStr .= $homeHistoryStr.'}。';
         }
         if (!empty($history['away'])){
-            $awayHistoryStr = '以下为'.$info['away_team_text'].'近期比赛数据{';
+            $awayHistoryStr = '以下为客场'.$info['away_team_text'].'近期比赛数据{';
             foreach ($history['home'] as $home){
                 $matchStr = $this->formatVsHistory($home,$type);
                 $awayHistoryStr .= $matchStr;
@@ -248,16 +248,16 @@ class MatchForcastLogModel extends Model
         if ($type == 0){
             list($score,$half,$redCard,$yellowCard,$cornerKick,$overtime,$penaltyKick) = $vs['home_scores'];
             $homeScoresStr = $vs['home_team_text'].'在该场对阵中成绩为,总得分为'.$score.'半场得分为'.$half.'获得红牌数为'.$redCard.'获得黄牌数为'.$yellowCard.
-                '角球得分为'.$cornerKick.'加时得分为'.$overtime.'点球大战得分为'.$penaltyKick.',当时队伍赛季排名为'.$vs['home_position'].'。';
+                '角球得分为'.$cornerKick.'加时得分为'.$overtime.'点球大战得分为'.$penaltyKick.',当时队伍赛季排名为'.$vs['home_position'];
 
             list($score,$half,$redCard,$yellowCard,$cornerKick,$overtime,$penaltyKick) = $vs['away_scores'];
             $awayScoresStr = $vs['away_team_text'].'在该场对阵中成绩为,总得分为'.$score.'半场得分为'.$half.'获得红牌数为'.$redCard.'获得黄牌数为'.$yellowCard.
-                '角球得分为'.$cornerKick.'加时得分为'.$overtime.'点球大战得分为'.$penaltyKick.',当时队伍赛季排名为'.$vs['away_position'].'。';
+                '角球得分为'.$cornerKick.'加时得分为'.$overtime.'点球大战得分为'.$penaltyKick.',当时队伍赛季排名为'.$vs['away_position'];
         }else{
             $score = array_sum($vs['home_scores']);
-            $homeScoresStr = $vs['home_team_text'].'在该场对阵中总得分为'.$score.',当时队伍赛季排名为'.$vs['away_position'].'。';
+            $homeScoresStr = $vs['home_team_text'].'在该场对阵中总得分为'.$score.',当时队伍赛季排名为'.$vs['away_position'];
             $score = array_sum($vs['away_scores']);
-            $awayScoresStr = $vs['away_team_text'].'在该场对阵中总得分为'.$score.',当时队伍赛季排名为'.$vs['away_position'].'。';
+            $awayScoresStr = $vs['away_team_text'].'在该场对阵中总得分为'.$score.',当时队伍赛季排名为'.$vs['away_position'];
         }
 
         $matchStr = '('.$vs['competition_text'].$matchDate.$vs['home_team_text'].' VS '.$vs['away_team_text'].
