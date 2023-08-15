@@ -172,12 +172,28 @@ class MatchForcastLogModel extends Model
         //将id重新保存
         Cache::set($cacheName,$cache);
 
-        $vsStr = '主场球队'.$info['home_team_text'].'赛季排名为'.$info['home_position'].
-            ',客场球队'.$info['away_team_text'].'赛季排名为'.$info['away_position'];
+        //获取球队赛季排名
+        $homePosition = '未知';
+        $awayPosition = '未知';
+        $compPositionList = Db::connect('compDataDb')->name('comp_tables')
+            ->where('comp_id',$info['competition_id'])
+            ->value('tables');
+
+        if (!is_null($compPositionList)) {
+            $compPositionList = json_decode($compPositionList, true);
+
+            foreach ($compPositionList as $item) {
+                $homePosition = $this->getPositionAndPrefix($type, $item, $info['home_team_id'] ?? null);
+                $awayPosition = $this->getPositionAndPrefix($type, $item, $info['away_team_id'] ?? null);
+            }
+        }
+
+        $vsStr = '主场球队'.$info['home_team_text'].'赛季排名为'.$homePosition.
+            ',客场球队'.$info['away_team_text'].'赛季排名为'.$awayPosition.',';
 
         //遍历阵容数据,仅足球有阵容数据
         if ($type == 0){
-            if (!is_null($matchInfo['home_zr'])){
+            if (!is_null($matchInfo['home_zr']) && !empty($matchInfo['home_zr'])){
                 $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
                 foreach (json_decode($matchInfo['home_zr'],true) as $home_zr){
                     if ($home_zr['first'] == 1){
@@ -186,7 +202,7 @@ class MatchForcastLogModel extends Model
                 }
                 $vsStr .= $homeFirst.'}';
             }
-            if (!is_null($matchInfo['away_zr'])){
+            if (!is_null($matchInfo['away_zr']) && !empty($matchInfo['away_zr'])){
                 $awayFirst = '以下是'.$info['away_team_text'].'客场首发阵容{';
                 foreach (json_decode($matchInfo['away_zr'],true) as $away_zr){
                     if ($away_zr['first'] == 1){
@@ -240,6 +256,26 @@ class MatchForcastLogModel extends Model
             'order' =>  $gptOrder,
             'match_id'  =>  $matchId[0]
         ];
+    }
+
+    private function getPositionAndPrefix($type, $item, $teamID): string
+    {
+        if ($type == 1) {
+            $positionPre = $item['name'];
+        } else {
+            $group = numToLetter($item['group']);
+            if (!empty($group)){
+                $group .= '组';
+            }
+            $positionPre = $group;
+        }
+
+        $teamPositionMap = array_column($item['rows'], 'position', 'team_id');
+
+        if (isset($teamPositionMap[$teamID])) {
+            return $positionPre.'第'.$teamPositionMap[$teamID];
+        }
+        return '';
     }
 
     private function formatVsHistory($vs,$type): string

@@ -143,3 +143,17 @@ function get_config($key)
 {
     return Config::get($key);
 }
+
+function numToLetter(int $num): string
+{
+    // 检查$num是否在1到26的范围内
+    if ($num < 1 || $num > 26) {
+        // 或者返回一个空字符串或特定的错误值
+         return '';
+    }
+
+    // 'A' 的 ASCII 值是 65
+    $ascii = 65 + $num - 1;
+
+    return chr($ascii);
+}
