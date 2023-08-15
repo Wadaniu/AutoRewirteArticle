@@ -97,7 +97,7 @@ class MatchForcastLogModel extends Model
 
         //根据热门联赛id获取赛事id
         $matchIds = Db::connect('compDataDb')->name($matchTable)
-            ->where('match_time','>=',time())
+            ->where('match_time','>=',strtotime(date('Y-m-d 23:59:59',time())))
             ->where('competition_id','in',$compIds)
             ->where('forecast','null')
             ->column('id');
@@ -177,6 +177,7 @@ class MatchForcastLogModel extends Model
         $awayPosition = '未知';
         $compPositionList = Db::connect('compDataDb')->name('comp_tables')
             ->where('comp_id',$info['competition_id'])
+            ->where('type',$type)
             ->value('tables');
 
         if (!is_null($compPositionList)) {
@@ -184,7 +185,16 @@ class MatchForcastLogModel extends Model
 
             foreach ($compPositionList as $item) {
                 $homePosition = $this->getPositionAndPrefix($type, $item, $info['home_team_id'] ?? null);
+                if (!empty($homePosition)){
+                    break;
+                }
+            }
+
+            foreach ($compPositionList as $item) {
                 $awayPosition = $this->getPositionAndPrefix($type, $item, $info['away_team_id'] ?? null);
+                if (!empty($awayPosition)){
+                    break;
+                }
             }
         }
 
@@ -193,23 +203,29 @@ class MatchForcastLogModel extends Model
 
         //遍历阵容数据,仅足球有阵容数据
         if ($type == 0){
-            if (!is_null($matchInfo['home_zr']) && !empty($matchInfo['home_zr'])){
-                $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
-                foreach (json_decode($matchInfo['home_zr'],true) as $home_zr){
-                    if ($home_zr['first'] == 1){
-                        $homeFirst .= $home_zr['name'].',';
+            if (!is_null($matchInfo['home_zr'])){
+                $home_zrs = json_decode($matchInfo['home_zr'],true);
+                if (!empty($home_zr)){
+                    $homeFirst = '以下是'.$info['home_team_text'].'主场首发阵容{';
+                    foreach ($home_zrs as $home_zr){
+                        if ($home_zr['first'] == 1){
+                            $homeFirst .= $home_zr['name'].',';
+                        }
                     }
+                    $vsStr .= $homeFirst.'}';
                 }
-                $vsStr .= $homeFirst.'}';
             }
-            if (!is_null($matchInfo['away_zr']) && !empty($matchInfo['away_zr'])){
-                $awayFirst = '以下是'.$info['away_team_text'].'客场首发阵容{';
-                foreach (json_decode($matchInfo['away_zr'],true) as $away_zr){
-                    if ($away_zr['first'] == 1){
-                        $awayFirst .= $away_zr['name'].',';
+            if (!is_null($matchInfo['away_zr'])){
+                $away_zrs = json_decode($matchInfo['away_zr'],true);
+                if (!empty($away_zrs)){
+                    $awayFirst = '以下是'.$info['away_team_text'].'客场首发阵容{';
+                    foreach ($away_zrs as $away_zr){
+                        if ($away_zr['first'] == 1){
+                            $awayFirst .= $away_zr['name'].',';
+                        }
                     }
+                    $vsStr .= $awayFirst.'}';
                 }
-                $vsStr .= $awayFirst.'}';
             }
         }
 
