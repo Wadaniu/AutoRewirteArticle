@@ -11,7 +11,7 @@ class ChatGPT {
         $this->apiKey = $apiKey;
     }
 
-    public function sendRequest($message, $model = 'gpt-3.5-turbo') {
+    public function sendRequest($message, $model = 'gpt-3.5-turbo-16k') {
         $data = array(
             'model' => $model,
             'messages' => [
