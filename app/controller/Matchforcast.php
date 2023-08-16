@@ -102,7 +102,9 @@ class Matchforcast extends BaseController
             }
 
             $instruct = $this->model->replaceOrder($instruct,$type);
-
+            if ($instruct === false){
+                throw new \think\Exception('缓存错误', 401);
+            }
             //调用gpt
             $gpt = new ChatGPT($key);
             $res = $gpt->sendRequest($instruct['order']);
